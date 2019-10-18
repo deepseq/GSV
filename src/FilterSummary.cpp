@@ -31,12 +31,6 @@
 
 using namespace std;
 
-////////////////////
-/* Tool functions */
-////////////////////
-
-/* Confidence Estimation*/
-
 float confEst(float cEConCov, float cEGenCov, float cEAlignLen, float cEAlignHit, float cEAlignDiff, float cEAlignGap)
 {
     float bpCovRatio;
@@ -59,11 +53,6 @@ float confEst(float cEConCov, float cEGenCov, float cEAlignLen, float cEAlignHit
     
     return confValue;
 }
-
-
-//////////////////////
-/* filter functions */
-//////////////////////
 
 void filterSum(string fSID, vector<blastObj> &fSBlast, int fSDist)
 {
@@ -91,7 +80,6 @@ void filterSum(string fSID, vector<blastObj> &fSBlast, int fSDist)
     float fSConfBPA;
     float fSConfBPB;
     
-    // output file
     string fSFileStr;
     
     fSFileStr = fSID + "_GSVMiningRes/BlastRes/" + fSID + ".GRearr.candidates.summary.txt";
@@ -103,7 +91,6 @@ void filterSum(string fSID, vector<blastObj> &fSBlast, int fSDist)
     fSFileBlastOut << fSFileOutStr;
     fSFileOutStr.clear();
     
-    // process
     for(fSBlastFIter = fSBlast.begin(); fSBlastFIter != fSBlast.end(); fSBlastFIter++)
     {
         fSContigID.push_back(fSBlastFIter->contigID);
@@ -246,10 +233,6 @@ void filterSum(string fSID, vector<blastObj> &fSBlast, int fSDist)
 
     fSFileBlastOut.close();
 }
-
-////////////////////
-/* main functions */
-////////////////////
 
 void GSVFilterSummary(string GSVFSID, int GSVFSDist)
 {
