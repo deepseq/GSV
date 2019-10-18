@@ -68,21 +68,6 @@ void rpkmFilter(vector<blastObj> &rFBlast, vector<assemblyObj> &rFAss, float rFT
     vector<assemblyObj>().swap(rFAssF);
 }
 
-/*
-small gap closing
- 
-1. cannot be merged, potential deletion
-ref:    >>>>>>>>>>-------------------<<<<<<<<<<
-contig: >>>>>>>>>>==<<<<<<<<<<
- 
-2. cannot be merged, potential insertion
-ref:    >>>>>>>>>>--<<<<<<<<<<
-contig: >>>>>>>>>>===================<<<<<<<<<<
- 
-3. can be merged
-ref:    >>>>>>>>>>--<<<<<<<<<<
-contig: >>>>>>>>>>==<<<<<<<<<<
-*/
 void spanFilter(vector<blastObj> &sFBlast, vector<assemblyObj> &sFAss, int sFThr)
 {
     vector<blastObj> sFBlastFTmp;
@@ -261,22 +246,6 @@ void lengthFilter(vector<blastObj> &lFBlast, vector<assemblyObj> &lFAss, int lFT
     vector<assemblyObj>().swap(lFAssF);
 }
 
-/*
- remove short alignment
- 
- 1. can be abandoned (middle is different)
- ref:    >>>>>>>>>>-------------------<<<<<<<<<<
- contig: >>>>>>>>>>=========<<<<<<<<<<
- 
- 2. cannot be abandoned
- ref:    >>>>>>>>>>-------------------<<<<<<<<<<
- contig: >>>>>>>>>><<<<<<<<<<
- 
- 3. cannot be abandoned
- ref:    >>>>>>>>>><<<<<<<<<<
- contig: >>>>>>>>>>=========<<<<<<<<<<
-*/
-
 void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
 {
     vector<blastObj> gFBlastFTmp;
@@ -302,10 +271,6 @@ void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
     {
         gFRegStr = gFAss[gFi].contigID + "\t";
         gFBlastList = grepBlastInfo(1, gFRegStr, gFBlast);
-        
-        // 2. cannot be abandoned
-        // ref:    >>>>>>>>>>-------------------<<<<<<<<<<
-        // contig: >>>>>>>>>><<<<<<<<<<
         
         gFBlastList = sortBlastContig(gFBlastList);
         gFIter = gFBlastList.begin();
@@ -384,10 +349,6 @@ void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
         gFBlastInfoA.clear();
         gFBlastInfoB.clear();
         
-        // 3. cannot be abandoned
-        // ref:    >>>>>>>>>><<<<<<<<<<
-        // contig: >>>>>>>>>>=========<<<<<<<<<<
-        
         gFBlastList = sortBlastChr(gFBlastList);
         gFIter = gFBlastList.begin();
         while(gFIter != gFBlastList.end())
@@ -464,8 +425,7 @@ void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
         gFGapList.clear();
         gFBlastInfoA.clear();
         gFBlastInfoB.clear();
-        
-        // output results
+
         gFGapRes = sortBlastContig(gFGapRes);
         gFBlastFTmp = uniqueBlast(gFGapRes);
         
@@ -493,7 +453,6 @@ void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
     gFAss.clear();
     gFAss = gFAssF;
     
-    // free vector
     vector<blastObj>().swap(gFGapRes);
     vector<blastObj>().swap(gFGapList);
     vector<blastObj>().swap(gFBlastList);
@@ -505,8 +464,6 @@ void gapFilter(vector<blastObj> &gFBlast, vector<assemblyObj> &gFAss, int gFThr)
 ////////////////////
 /* main functions */
 ////////////////////
-
-/* filter raw blast results */
 
 void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
 {
@@ -527,7 +484,7 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
     if(!GSVBFFileBlast){printf("%s \n", "Error! Cannot open file to read! [GSVBlastFilter]"); exit(1);}
     while(1)
     {
-        getline(GSVBFFileBlast, GSVBFLine); // careful! EOF check must be after this cmd as otherwise cannot get right EOF position.
+        getline(GSVBFFileBlast, GSVBFLine); 
         if(GSVBFFileBlast.eof()) break;
         GSVBFLine.erase(GSVBFLine.find_last_not_of(" \n\r\t")+1);
         
@@ -571,7 +528,6 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
     
     GSVBFFileAss.close();
     
-    // free vector
     vector<string>().swap(GSVBFDataStr);
 
     GSVBFFileStr = GSVBFID + "_GSVMiningRes/BlastRes/" + GSVBFID + ".GRearr.candidates.txt";
@@ -581,8 +537,6 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
     GSVBFFileStr = GSVBFID + "_GSVMiningRes/AssemblyRes/" + GSVBFID + ".GRearr.candidates.fasta";
     ofstream GSVBFFastaOut(GSVBFFileStr);
     if(!GSVBFFastaOut){printf("%s \n", "Error! Cannot open file to write! [GSVBlastFilter]"); exit(1);}
-    
-    // process data
     
     GSVBFContigID.erase(unique(GSVBFContigID.begin(), GSVBFContigID.end()), GSVBFContigID.end());
     
@@ -601,7 +555,6 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
         
         if(GSVBFBlastTmp.size() > 1)
         {
-            // output fasta sequence
             for(GSVBFi = 0; GSVBFi < int(GSVBFAssRes.size()); GSVBFi++)
             {
                 if(GSVBFAssRes[GSVBFi].contigID == *GSVBFIter)
@@ -615,7 +568,6 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
             
             GSVBFBlastTmp = sortBlastContig(GSVBFBlastTmp);
             
-            // check alignment is whole or partial
             for(GSVBFj = 0; GSVBFj < (int(GSVBFBlastTmp.size())-1); GSVBFj++)
             {
                 if(abs(GSVBFBlastTmp[GSVBFj+1].contigPosA - GSVBFBlastTmp[GSVBFj].contigPosB) > GSVBFGap)
@@ -624,13 +576,11 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
                 }
             }
             
-            // check alignment is whole or partial
             for(GSVBFi = 0; GSVBFi < int(GSVBFBlastTmp.size()); GSVBFi++)
             {
                 GSVBFBlastLen = GSVBFBlastLen + GSVBFBlastTmp[GSVBFi].contigAlign;
             }
             
-            // processing
             for(GSVBFi = 0; GSVBFi < int(GSVBFBlastTmp.size()); GSVBFi++)
             {
                 GSVBFBlastOut << GSVBFBlastTmp[GSVBFi].dataInfo;
@@ -667,14 +617,11 @@ void GSVBlastFilter(string GSVBFID, int GSVBFGap, int GSVBFDist)
         GSVBFBlastLen = 0;
     }
     
-    // free vector
     vector<blastObj>().swap(GSVBFBlastTmp);
     
     GSVBFFastaOut.close();
     GSVBFBlastOut.close();
 }
-
-/* filter primary blast results */
 
 void GSVPrimaryFilter(string GSVPFID, int GSVPFGap, int GSVPFDist, float GSVPFRPKM, int GSVPFSpan)
 {
@@ -725,22 +672,17 @@ void GSVPrimaryFilter(string GSVPFID, int GSVPFGap, int GSVPFDist, float GSVPFRP
     
     GSVPFFileAss.close();
     
-    // free vector
     vector<string>().swap(GSVPFDataStr);
 
-    // rpkm filtering
     cout << ">> " << currentDateTime().c_str() << " <<\t--------> RPKM Filtering\n";
     rpkmFilter(GSVPFBlastRes, GSVPFAssRes, GSVPFRPKM);
     
-    // span filtering
     cout << ">> " << currentDateTime().c_str() << " <<\t--------> SPAN Filtering\n";
     spanFilter(GSVPFBlastRes, GSVPFAssRes, GSVPFSpan);
     
-    // length filtering
     cout << ">> " << currentDateTime().c_str() << " <<\t--------> LEN Filtering\n";
     lengthFilter(GSVPFBlastRes, GSVPFAssRes, GSVPFGap);
     
-    // gap filtering
     cout << ">> " << currentDateTime().c_str() << " <<\t--------> GAP Filtering\n";
     gapFilter(GSVPFBlastRes, GSVPFAssRes, GSVPFDist);
     
