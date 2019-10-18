@@ -31,11 +31,6 @@
 
 using namespace std;
 
-////////////////////
-/* Tool functions */
-////////////////////
-
-/* samtools counting in flanking regions */
 int getFlankCounts(string gFCBam, string gFCID, long int gFCStart, long int gFCEnd, int gFCWin, long int gFCTotal)
 {
     int gFCNum;
@@ -54,7 +49,6 @@ int getFlankCounts(string gFCBam, string gFCID, long int gFCStart, long int gFCE
     return gFCNum;
 }
 
-/* flanking region counting */
 pair<string, string> flankCalCov(string fCCBwa, string fCCContig, int fCCGroup, string fCCContigID, string fCCChrID, long int fCCContigStart, long int fCCContigEnd, long int fCCChrStart, long int fCCChrEnd, string fCCOri, long int fCCBWATotal, long int fCCContigTotal, int fCCWinSize)
 {
     string fCCResA;
@@ -105,7 +99,6 @@ pair<string, string> flankCalCov(string fCCBwa, string fCCContig, int fCCGroup, 
     }
     else if (fCCGroup == -1)
     {
-        /* contig coverage */
         fCCConStartPos = fCCContigStart - fCCWinSize;
         fCCConEndPos = fCCContigStart + fCCWinSize;
         if(fCCConStartPos < 0) fCCConStartPos = 0;
@@ -113,7 +106,6 @@ pair<string, string> flankCalCov(string fCCBwa, string fCCContig, int fCCGroup, 
         fCCContigCountIn = getFlankCounts(fCCContig, fCCContigID, fCCContigStart, fCCConEndPos, fCCWinSize, (fCCBWATotal+fCCContigTotal));
         fCCContigCountOut = getFlankCounts(fCCContig, fCCContigID, fCCConStartPos, fCCContigStart, fCCWinSize, (fCCBWATotal+fCCContigTotal));
         
-        /* genome coverage */
         fCCBwaStartPos = fCCChrStart - fCCWinSize;
         fCCBwaEndPos = fCCChrStart + fCCWinSize;
         if(fCCBwaStartPos < 0) fCCBwaStartPos = 0;
@@ -153,7 +145,6 @@ pair<string, string> flankCalCov(string fCCBwa, string fCCContig, int fCCGroup, 
         
         fCCResA = fCCResA + "--" + int2str(fCCContigCountIn) + "--" + int2str(fCCContigCountOut);
 
-        /* genome coverage */
         fCCBwaStartPos = fCCChrStart - fCCWinSize;
         fCCBwaEndPos = fCCChrStart + fCCWinSize;
         if(fCCBwaStartPos < 0) fCCBwaStartPos = 0;
@@ -192,7 +183,6 @@ pair<string, string> flankCalCov(string fCCBwa, string fCCContig, int fCCGroup, 
     return make_pair(fCCResA, fCCResB);
 }
 
-/* samtools counting in breakpoint regions */
 int getBPCounts(string gBCSample, string gBCBam, string gBCID, long int gBCStart, long int gBCEnd, long int gBCPos, int gBCWin, long int gBCTotal)
 {
     int gBCNum = 0;
@@ -227,7 +217,7 @@ int getBPCounts(string gBCSample, string gBCBam, string gBCID, long int gBCStart
  
     while(1)
     {
-        getline(gBCFile, gBCFileLine); // careful! EOF check must be after this cmd as otherwise cannot get right EOF position.
+        getline(gBCFile, gBCFileLine);
         if(gBCFile.eof()) break;
         gBCFileLine.erase(gBCFileLine.find_last_not_of(" \n\r\t")+1);
         
@@ -260,7 +250,6 @@ int getBPCounts(string gBCSample, string gBCBam, string gBCID, long int gBCStart
     
     gBCFile.close();
     
-    // potential problem, float is enough for the small or large number?
     gBCNum = gBCNum/(float(gBCWin)/1000)/(float(gBCTotal)/1000000);
     
     gBCCmdTmp = "rm " + gBCSample + "_GSVMiningRes/tmp.bam";
@@ -278,8 +267,6 @@ int getBPCounts(string gBCSample, string gBCBam, string gBCID, long int gBCStart
     return gBCNum;
 }
 
-/* breakpoint region counting */
-
 pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig, int bCCGroup, string bCCContigID, string bCCChrID, long int bCCContigStart, long int bCCContigEnd, long int bCCChrStart, long int bCCChrEnd, string bCCOri, long int bCCBWATotal, long int bCCContigTotal, int bCCWinSize)
 {
     long int bCCConStartPos;
@@ -295,7 +282,6 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
 
     if(bCCGroup == 0)
     {
-        /* contig coverage */
         bCCConStartPos = bCCContigEnd - bCCWinSize;
         bCCConEndPos = bCCContigEnd + bCCWinSize;
         if(bCCConStartPos < 0) bCCConStartPos = 0;
@@ -303,7 +289,6 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
         bCCContigCount = getBPCounts(bCCSample, bCCContig, bCCContigID, bCCConStartPos, bCCConEndPos, bCCContigEnd, bCCWinSize, (bCCBWATotal+bCCContigTotal));
         bCCContigTmp = int2str(bCCContigCount);
         
-        /* genome coverage */
         bCCBwaStartPos = bCCChrEnd - bCCWinSize;
         bCCBwaEndPos = bCCChrEnd + bCCWinSize;
         if(bCCBwaStartPos < 0) bCCBwaStartPos = 0;
@@ -313,7 +298,6 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
     }
     else if(bCCGroup == -1)
     {
-        /* contig coverage */
         bCCConStartPos = bCCContigStart - bCCWinSize;
         bCCConEndPos = bCCContigStart + bCCWinSize;
         if(bCCConStartPos < 0) bCCConStartPos = 0;
@@ -321,7 +305,6 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
         bCCContigCount = getBPCounts(bCCSample, bCCContig, bCCContigID, bCCConStartPos, bCCConEndPos, bCCContigStart, bCCWinSize, (bCCBWATotal+bCCContigTotal));
         bCCContigTmp = int2str(bCCContigCount);
         
-        /* genome coverage */
         bCCBwaStartPos = bCCChrStart - bCCWinSize;
         bCCBwaEndPos = bCCChrStart + bCCWinSize;
         if(bCCBwaStartPos < 0) bCCBwaStartPos = 0;
@@ -331,7 +314,6 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
     }
     else
     {
-        /* contig coverage */
         bCCConStartPos = bCCContigStart - bCCWinSize;
         bCCConEndPos = bCCContigStart + bCCWinSize;
         if(bCCConStartPos < 0) bCCConStartPos = 0;
@@ -345,9 +327,7 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
         
         bCCContigCount = getBPCounts(bCCSample, bCCContig, bCCContigID, bCCConStartPos, bCCConEndPos, bCCContigEnd, bCCWinSize, (bCCBWATotal+bCCContigTotal));
         bCCContigTmp = bCCContigTmp + "--" + int2str(bCCContigCount);
-        
-        /* genome coverage */
-        
+
         bCCBwaStartPos = bCCChrStart - bCCWinSize;
         bCCBwaEndPos = bCCChrStart + bCCWinSize;
         if(bCCBwaStartPos < 0) bCCBwaStartPos = 0;
@@ -366,14 +346,8 @@ pair<string, string> bpCalCov(string bCCSample, string bCCBwa, string bCCContig,
     return make_pair(bCCContigTmp, bCCBwaTmp);
 }
 
-//////////////////////
-/* filter functions */
-//////////////////////
-
-/* filtering by coverages of flanking regions */
 void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj> &fCFAss, int fCFDist, long int fCFTotalChr, long int fCFTotalContig)
 {
-    /* Calculating Coverage */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Calculating Coverages of Flanking Regions\n";
     
     string bwaBam = fCFID + "_GSVMiningRes/MappingRes/" + fCFID + ".unique.sorted.bam";
@@ -453,8 +427,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
             fCFAIter = fCFBIter;
         }
         
-        // last one -- inside
-        
         fCFBlastFTmp.push_back(*fCFAIter);
         fCFBlastPos.push_back(fCFAIter->contigPosA);
         fCFBlastPos.push_back(fCFAIter->contigPosB);
@@ -484,7 +456,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
         fCFGroup = 0;
     }
     
-    /* Filtering 0 Data */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Filtering 0 Data\n";
     vector<string> fCFBlastFCovInfo;
     
@@ -509,14 +480,12 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
     fCFBlastFInfo.clear();
     fCFBlastFCovInfo.clear();
     
-    /* Filtering Low Data */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Filtering Low Data\n";
     
     fCFBlastFTmp = fCFBlastF;
     fCFBlastF.clear();
     
     vector<string> fCFBlastFCovBwaInfo;
-    
     
     float covCmpA;
     float covCmpB;
@@ -564,7 +533,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
     fCFBlastFCovInfo.clear();
     fCFBlastFCovBwaInfo.clear();
     
-    /* Filtering Inconsecutive Data (Incomplete Alignment) */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Filtering Inconsecutive Data (Incomplete Alignment)\n";
     
     fCFGroup = 0;
@@ -617,8 +585,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
                 
                 fCFAIter = fCFBIter;
             }
-
-            // last one -- inside
             
             fCFFragList.push_back(*fCFAIter);
             if(fCFGroup != 0){fCFBlastF.insert(fCFBlastF.end(), fCFFragList.begin(), fCFFragList.end());}
@@ -629,7 +595,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
         }
     }
     
-    /* Generating Positions */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Generating Positions\n";
     
     string fCFFileStr = fCFID + "_GSVMiningRes/BlastRes/" + fCFID + ".GRearr.candidates.bpPos.txt";
@@ -695,8 +660,6 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
             fCFAIter = fCFBIter;
         }
         
-        // last one -- inside
-        
         fCFFragList.push_back(*fCFAIter);
         
         for(fCFBlastFIter = fCFFragList.begin(); fCFBlastFIter != fCFFragList.end(); fCFBlastFIter++)
@@ -711,21 +674,17 @@ void flankCovFilter(string fCFID, vector<blastObj> &fCFBlast, vector<assemblyObj
     
     fCFBlastOut.close();
     
-    // return results
     fCFBlast.clear();
     fCFBlast = fCFBlastF;
     
-    // free vector
     vector<blastObj>().swap(fCFBlastF);
     vector<blastObj>().swap(fCFBlastFTmp);
     vector<blastObj>().swap(fCFBlastList);
     vector<assemblyObj>().swap(fCFAssF);
 }
 
-/* filtering by coverages of breakpoint regions */
 void bpCovFilter(string bCFID, vector<blastObj> &bCFBlast, vector<assemblyObj> &bCFAss, int bCFDist, int bCFMaxLen, long int bCFTotalChr, long int bCFTotalContig)
 {
-    /* Calculating Coverage */
     cout << ">> " << currentDateTime().c_str() << " <<\t------------> Calculating Coverages of Breakpoint Regions\n";
     
     string bwaBam = bCFID + "_GSVMiningRes/MappingRes/" + bCFID + ".unique.sorted.bam";
@@ -813,8 +772,6 @@ void bpCovFilter(string bCFID, vector<blastObj> &bCFBlast, vector<assemblyObj> &
             bCFAIter = bCFBIter;
         }
         
-        // last one -- inside
-        
         bCFBlastFTmp.push_back(*bCFAIter);
         bCFBlastPos.push_back(bCFAIter->contigPosA);
         bCFBlastPos.push_back(bCFAIter->contigPosB);
@@ -844,20 +801,14 @@ void bpCovFilter(string bCFID, vector<blastObj> &bCFBlast, vector<assemblyObj> &
         bCFGroup = 0;
     }
     
-    // return results
     bCFBlast.clear();
     bCFBlast = bCFBlastF;
     
-    // free vector
     vector<blastObj>().swap(bCFBlastF);
     vector<blastObj>().swap(bCFBlastFTmp);
     vector<blastObj>().swap(bCFBlastList);
     vector<assemblyObj>().swap(bCFAssF);
 }
-
-////////////////////
-/* main functions */
-////////////////////
 
 void GSVCovFilter(string GSVCFID, int GSVCFDist, int GSVCFLen, long int GSVCFTotalChr, long int GSVCFTotalContig)
 {
